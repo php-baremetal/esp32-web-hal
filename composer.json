@@ -1,0 +1,14 @@
+{
+  "name": "php-baremetal/esp32-web-hal",
+  "description": "ESP32 implementation of the web HAL (bm_web_hal.h) over esp_http_server: the server task, request/WebSocket handlers and the request/response rendezvous; another family ships its own <fam>-web-hal.",
+  "type": "bm-hal",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Gianfrancesco Aurecchia",
+      "email": "gianfri@aurecchia.com"
+    }
+  ],
+  "provide": { "php-baremetal/web-hal": "1.0.0" },
+  "extra": { "baremetal": { "platform": "esp32", "idf-requires": ["esp_http_server", "esp_netif", "phpbm"], "sdkconfig": "sdkconfig.defaults" } }
+}
