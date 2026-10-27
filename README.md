@@ -15,7 +15,7 @@ back the reply PHP fills in. It implements `bm_web_hal.h` from ext-web.
 ## Install
 
 Projects do not require it. A project requires `php-baremetal/ext-web`, and conductor adds
-`php-baremetal/esp32-web-hal` because the project's SDK (`"sdk": "esp32@^1.0"`) has the platform `esp32`:
+`php-baremetal/esp32-web-hal` because the project's SDK (`"sdk": "esp32@^2.0"`) has the platform `esp32`:
 
 ```bash
 composer require php-baremetal/ext-web
