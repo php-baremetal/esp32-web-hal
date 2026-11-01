@@ -25,7 +25,8 @@ composer require php-baremetal/ext-web
 
 **The server task.** One `esp_http_server` instance, started by the first `serve_http()` or `serve_ws()`:
 task on core 0, 8 KB stack in internal RAM, LRU purge of idle sockets when the socket table is full, 12 URI
-handler slots, request header block up to 2048 bytes, up to 20 response headers, a 2 s limit on a stuck
+handler slots, request header block up to 2048 bytes, 20 response header slots (the 16 headers ext-web lets PHP set, plus
+4 for the HAL's own), a 2 s limit on a stuck
 outbound send. The task never calls PHP: it parks each request in a slot (in PSRAM), posts the slot to the
 event queue of ext-events and waits for the reply.
 
