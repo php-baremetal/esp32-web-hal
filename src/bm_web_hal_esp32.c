@@ -45,6 +45,11 @@
 
 static const char *TAG = "web";
 
+/* Request buffers go to PSRAM, and to internal RAM once the PSRAM is full: on a 2 MB PSRAM board the Wi-Fi
+ * buffers can leave less than a request slot free. */
+#define WEB_MEM_PSRAM    (MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT)
+#define WEB_MEM_INTERNAL (MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT)
+
 #define WS_POST_WAIT_MS   2000   /* how long the httpd task waits for a reactor-queue slot before dropping */
 #define HTTPD_CORE        0      /* the PHP task runs on core 1 */
 #define WEB_WAIT_SLICE_MS 1000   /* with no deadline, the wait re-checks the slot this often */
@@ -367,7 +372,7 @@ static int web_read_body(httpd_req_t *req, web_slot_t *s)
     if (s_max_body > 0 && req->content_len > s_max_body) {
         return 413;
     }
-    s->body = heap_caps_malloc(req->content_len, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    s->body = heap_caps_malloc_prefer(req->content_len, 2, WEB_MEM_PSRAM, WEB_MEM_INTERNAL);
     if (s->body == NULL) {
         return 413;
     }
@@ -392,8 +397,9 @@ static esp_err_t web_handle(httpd_req_t *req)
     if (s_stopping) {
         return web_send_text(req, 503, false);
     }
-    hal_slot_t *h = heap_caps_calloc(1, sizeof *h, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    hal_slot_t *h = heap_caps_calloc_prefer(1, sizeof *h, 2, WEB_MEM_PSRAM, WEB_MEM_INTERNAL);
     if (h == NULL) {
+        ESP_LOGW(TAG, "%s: no memory for the request, 503 sent", req->uri);
         return web_send_text(req, 503, false);
     }
     web_slot_t *s = &h->pub;
@@ -420,7 +426,8 @@ static esp_err_t web_handle(httpd_req_t *req)
     h->state = SLOT_PARKED;
     if (!bm_events_post_http(s)) {
         web_slot_free(h);
-        return web_send_text(req, 503, false);   /* the reactor queue is full */
+        ESP_LOGW(TAG, "%s %s: the event queue is full, 503 sent", method, path);
+        return web_send_text(req, 503, false);
     }
     if (!web_wait(h)) {
         /* The reactor owns the slot now and frees it when it answers: no access to it from here on. */
@@ -550,7 +557,7 @@ static void ws_send_work(void *arg)
 
 static bool ws_queue(int32_t client, const char *data, size_t len)
 {
-    ws_job_t *j = heap_caps_malloc(sizeof(ws_job_t) + len, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    ws_job_t *j = heap_caps_malloc_prefer(sizeof(ws_job_t) + len, 2, WEB_MEM_PSRAM, WEB_MEM_INTERNAL);
     if (!j) {
         return false;
     }

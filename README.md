@@ -27,7 +27,7 @@ composer require php-baremetal/ext-web
 task on core 0, 8 KB stack in internal RAM, LRU purge of idle sockets when the socket table is full, 12 URI
 handler slots, request header block up to 2048 bytes, 20 response header slots (the 16 headers ext-web lets PHP set, plus
 4 for the HAL's own), a 2 s limit on a stuck
-outbound send. The task never calls PHP: it parks each request in a slot (in PSRAM), posts the slot to the
+outbound send. The task never calls PHP: it parks each request in a slot (in PSRAM, or in internal RAM when the PSRAM is full), posts the slot to the
 event queue of ext-events and waits for the reply.
 
 **Requests.** Methods `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD` and `OPTIONS` go to one catch-all route
