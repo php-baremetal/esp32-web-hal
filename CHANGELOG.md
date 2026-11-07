@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4
+
+- Changed: the 503 warning for a request with no free event slot reads `no free event slot, 503 sent`
+  (ext-events 1.1.0 replaced the 32-message queue with event slots).
+
 ## 1.0.3
 
 - Fixed: the request slot, the request body and the queued WebSocket frames were allocated only in PSRAM. On a

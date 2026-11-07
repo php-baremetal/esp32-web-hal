@@ -426,7 +426,7 @@ static esp_err_t web_handle(httpd_req_t *req)
     h->state = SLOT_PARKED;
     if (!bm_events_post_http(s)) {
         web_slot_free(h);
-        ESP_LOGW(TAG, "%s %s: the event queue is full, 503 sent", method, path);
+        ESP_LOGW(TAG, "%s %s: no free event slot, 503 sent", method, path);
         return web_send_text(req, 503, false);
     }
     if (!web_wait(h)) {
